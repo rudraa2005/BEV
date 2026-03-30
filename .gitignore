@@ -1,0 +1,30 @@
+# OS / editor
+.DS_Store
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Generated calibration / array dumps
+*.npy
+*.npz
+
+# Images and rendered outputs
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.tif
+*.tiff
+*.webp
+
+# Video / sensor data
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.pcd
+*.bin
+
+# Local datasets
+v1.0-mini/
