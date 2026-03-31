@@ -77,8 +77,8 @@ python -m tensorboard.main --logdir=./runs
 ### Visual Results (6-Cams to BEV)
 The model successfully identifies vehicle positions across disparate camera views and fuses them into a coherent spatial grid.
 
-![BEV Comparison 1](eval_results/sample_001.png)
-![BEV Comparison 2](eval_results/sample_002.png)
+![BEV Comparison 1](eval_results/sample_009.png)
+![BEV Comparison 2](eval_results/sample_0010.png)
 
 > [!TIP]
 > **Key Polish**: Our final evaluation includes a **0.6 probability threshold** and a **3x3 Median Blur** filter to eliminate "salt-and-pepper" noise and produce presentation-ready occupancy patches.
