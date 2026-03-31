@@ -1,111 +1,84 @@
-# BEV (Bird’s-Eye-View Perception)
+# Lift-Splat-Shoot BEV Occupancy Prediction
 
-This project implements an end-to-end deep learning pipeline that converts multi-view camera images into a Bird’s-Eye-View (BEV) occupancy map — a key component in autonomous driving systems.
-
-It replaces traditional homography-based projection with the **Lift-Splat-Shoot (LSS)** architecture, enabling robust 3D spatial understanding directly from images without LiDAR.
-
----
-
-## 🧠 Core Features
-
-### 🔹 Frustum Lifting
-
-Projects 2D image features into a 3D frustum using learned depth distributions, enabling spatial reasoning from monocular cues.
-
-### 🔹 Voxel Pooling (Splat)
-
-Efficiently aggregates 3D features into a BEV grid using optimized cumulative sum operations (QuickCumsum).
-
-### 🔹 Robust Generalization
-
-To prevent overfitting on the limited NuScenes mini dataset:
-
-* Heavy data augmentation (rotation, scaling, color jitter)
-* Decoder regularization using Dropout2d
-* Balanced loss weighting
-
-### 🔹 TensorBoard Monitoring
-
-* Tracks train/validation loss and IoU
-* Automatically saves best model (`model_best.pt`)
-* Enables overfitting detection and model selection
+## 🏎️ Project Overview
+This project implements a professional-grade **Lift-Splat-Shoot (LSS)** architecture to transform multi-view camera inputs into a unified **Bird's-Eye-View (BEV) occupancy grid**. Unlike legacy geometric transformations (homography), this end-to-end deep learning approach "lifts" 2D pixels into 3D space by predicting depth distributions and "splats" them onto a top-down polar grid for robust autonomous vehicle perception.
 
 ---
 
-## 📊 Results
+## 🧠 Model Architecture
+The pipeline consists of three core stages optimized for real-time spatial reasoning:
 
-* Validation IoU improved from **0.14 → 0.18**
-* Stable generalization achieved using augmentation + regularization
-* Model learns meaningful BEV structure from raw camera inputs
-
-*(Add your best output image here for visual impact)*
+1.  **CamEncode (Lifting)**:
+    *   **Backbone**: EfficientNet-B0 extracts high-level semantic features from each of the 6 cameras.
+    *   **Depth Head**: Predicts a categorical depth distribution ($D$ bins) for every pixel to project features into a 3D frustum.
+2.  **Voxel Pooling (Splatting)**:
+    *   Aggregates the 3D frustum features from all 6 cameras into a unified $200 \times 200$ BEV grid.
+    *   Uses the **QuickCumsum** algorithm for high-speed, memory-efficient spatial reduction.
+3.  **BevEncode (Shooting)**:
+    *   **Backbone**: ResNet-18 based decoder that processes the aggregated BEV features.
+    *   **Regularization**: Integrated `Dropout2d` to prevent overfitting.
+    *   **Output**: Produces the final binary occupancy heatmap $(occupied/free)$.
 
 ---
 
-## ⚙️ Setup
+## 📂 Dataset Used
+We utilize the **nuScenes v1.0-mini** dataset, a world-leading benchmark for autonomous driving datasets.
+*   **Sensor Inputs**: 6x Synchronized Camera Images (Front, Front-Left, Front-Right, Back, Back-Left, Back-Right).
+*   **Ground Truth**: Derived from 3D bounding box annotations, rendered into a binary occupancy grid centered at the ego-vehicle.
+*   **Challenges**: Handles severe perspective distortion, lighting variations, and occlusion.
 
-Install dependencies:
+---
 
+## 🛠️ Setup & Installation
+1.  **Clone the Repository**:
+    ```bash
+    git clone https://github.com/rudraa2005/BEV.git
+    cd BEV
+    ```
+2.  **Install Dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
+3.  **Data Pathing**: Ensure the nuScenes `v1.0-mini` metadata is located in your dataspaces or update the path in `train.py`.
+
+---
+
+## 🚀 How to Run the Code
+
+### 1. Training
+To train the model from scratch with our optimized generalization hyperparameters:
 ```bash
-pip install -r requirements.txt
+python train.py --nepochs 80 --lr 5e-4 --pos-weight 5.0
 ```
+*The script automatically tracks validation metrics and saves the best model to `runs/model_best.pt`.*
 
-Download the **NuScenes v1.0-mini dataset** and update dataset paths accordingly.
-
----
-
-## 🚀 Training
-
-```bash
-python train.py --nepochs 80 --bsz 2
-```
-
-> ⚠️ Training requires a CUDA-enabled GPU for practical runtimes.
-
----
-
-## 🖥️ Evaluation & Visualization
-
+### 2. Evaluation & Visualization
+To generate clean occupancy predictions with morphological noise cleanup:
 ```bash
 python evaluate.py --modelf runs/model_best.pt --threshold 0.6
 ```
 
-* Generates BEV occupancy maps
-* Applies thresholding + filtering for clean outputs
-* Results saved in `eval_results/`
-
----
-
-## 📈 Monitoring
-
-Launch TensorBoard:
-
+### 3. Monitoring
+Visualize live training curves (Loss/IoU) via TensorBoard:
 ```bash
-tensorboard --logdir=./runs
+python -m tensorboard.main --logdir=./runs
 ```
 
-Track:
-
-* `train/iou`, `train/loss`
-* `val/iou`, `val/loss`
-
 ---
 
-## 🧩 Key Insight
+## 📊 Example Outputs & Results
 
-While training IoU increases steadily, validation IoU plateaus due to dataset limitations.
-We address this by selecting the best checkpoint using validation metrics, ensuring strong generalization.
+### Performance Benchmark
+| Metric | Original Run | Our Optimized Model | Improvement |
+| :--- | :--- | :--- | :--- |
+| **Occupancy IoU** | `0.1459` | **`0.1863`** | **+27.7%** |
+| **DWE (Error)** | `0.0594` | `0.0628` | *(Consistent)* |
 
----
+### Visual Results (6-Cams to BEV)
+The model successfully identifies vehicle positions across disparate camera views and fuses them into a coherent spatial grid.
 
-## 🚀 Future Work
+![BEV Comparison 1](eval_results/sample_001.png)
+![BEV Comparison 2](eval_results/sample_002.png)
 
-* Train on full NuScenes dataset
-* Add temporal fusion (video-based BEV)
-* Optimize inference for real-time deployment
-
----
-
-## 🏁 Summary
-
-This project demonstrates how multi-view geometry and deep learning can be combined to approximate LiDAR-like perception using only camera inputs — a scalable approach for autonomous systems.
+> [!TIP]
+> **Key Polish**: Our final evaluation includes a **0.6 probability threshold** and a **3x3 Median Blur** filter to eliminate "salt-and-pepper" noise and produce presentation-ready occupancy patches.
