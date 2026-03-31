@@ -1,0 +1,6 @@
+{
+  "model": "runs/model_best.pt",
+  "num_samples": 81,
+  "occupancy_iou": 0.1863,
+  "distance_weighted_error": 0.062801
+}
