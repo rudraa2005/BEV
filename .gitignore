@@ -1,30 +1,22 @@
-# OS / editor
-.DS_Store
-
-# Python cache
+# Python
 __pycache__/
 *.py[cod]
+*$py.class
 
-# Generated calibration / array dumps
-*.npy
-*.npz
+# PyTorch
+runs/
+*.pt
+*.pth
 
-# Images and rendered outputs
-*.jpg
-*.jpeg
-*.png
-*.bmp
-*.tif
-*.tiff
-*.webp
+# Windows
+Thumbs.db
+Desktop.ini
 
-# Video / sensor data
-*.mp4
-*.avi
-*.mov
-*.mkv
-*.pcd
-*.bin
+# Evaluates
+eval_results/
+results/
 
-# Local datasets
+# Datasets
 v1.0-mini/
+*.tgz
+*.tar
