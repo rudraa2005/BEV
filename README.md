@@ -1,4 +1,4 @@
-# 🚗 Lift-Splat-Shoot BEV (Bird’s-Eye-View Perception)
+# BEV (Bird’s-Eye-View Perception)
 
 This project implements an end-to-end deep learning pipeline that converts multi-view camera images into a Bird’s-Eye-View (BEV) occupancy map — a key component in autonomous driving systems.
 
